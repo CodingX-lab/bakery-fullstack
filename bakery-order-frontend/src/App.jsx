@@ -11,8 +11,7 @@ function App() {
   const navigate = useNavigate(); // ✅ 现在这里生效了，因为父级 main.jsx 有 Router
   const [cartItems, setCartItems] = useState([]);
 
-  // 2. 用 useCallback 包裹 fetchCart
-  // 这样除非 navigate 变了，否则 fetchCart 函数的引用永远不变，不会触发 useEffect
+  // 用 useCallback 包裹 fetchCart
   const fetchCart = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:3000/api/v1/cart_items", {
@@ -27,7 +26,7 @@ function App() {
     }
   }, []);
 
-  // 2. 专门给“初始化”用的 Effect
+  // 专门给“初始化”用的 Effect
   useEffect(() => {
     // 把 fetchCart 定义在里面，这样它就不再是外部依赖了
     const fetchInitialData = async () => {
