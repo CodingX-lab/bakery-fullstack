@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
@@ -11,40 +11,32 @@ function App() {
   const navigate = useNavigate(); // ✅ 现在这里生效了，因为父级 main.jsx 有 Router
   const [cartItems, setCartItems] = useState([]);
 
-  // 增加一个简单的触发器，用来手动通知 useEffect 刷新数据
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    const fetchCart = async () => {
-      console.log("正在尝试获取购物车数据...");
-      try {
-        const response = await fetch(
-          "http://localhost:3000/api/v1/cart_items",
-          {
-            credentials: "include",
-          }
-        );
-
-        console.log("收到响应状态码:", response.status);
-
-        if (response.status === 401) {
-          if (window.location.pathname === "/cart") {
-            console.log("检测到未登录且在购物车页，执行 navigate");
-            navigate("/login");
-          }
-          return;
-        }
-
-        if (response.ok) {
-          const data = await response.json();
-          setCartItems(data);
-        }
-      } catch (error) {
-        console.error("Fetch 发生错误:", error);
+  // 2. 用 useCallback 包裹 fetchCart
+  // 这样除非 navigate 变了，否则 fetchCart 函数的引用永远不变，不会触发 useEffect
+  const fetchCart = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/v1/cart_items", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCartItems(data);
       }
+    } catch (error) {
+      console.error("获取失败", error);
+    }
+  }, []);
+
+  // 2. 专门给“初始化”用的 Effect
+  useEffect(() => {
+    // 把 fetchCart 定义在里面，这样它就不再是外部依赖了
+    const fetchInitialData = async () => {
+      await fetchCart();
     };
-    fetchCart();
-  }, [navigate, tick]);
+
+    fetchInitialData();
+    // 此时数组留空 [] 是完全合法的，因为里面没用到任何外部变量（除了被 useCallback 锁定的 fetchCart）
+  }, [fetchCart]);
 
   const addToCart = async (product) => {
     const res = await fetch("http://localhost:3000/api/v1/cart_items", {
@@ -61,9 +53,8 @@ function App() {
     }
 
     if (res.ok) {
-      // ✅ 重点：这里不直接调函数，而是改变 tick 的值
-      // 这一变，上面的 useEffect 就会感知到，并自动运行内部的 fetchCart
-      setTick((prev) => prev + 1);
+      // ✅ 重点：直接调用它！不需要 tick，不需要二次渲染
+      await fetchCart();
       alert("添加成功！");
     }
   };
