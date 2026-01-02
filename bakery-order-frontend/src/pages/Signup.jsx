@@ -33,6 +33,7 @@ function Signup() {
         <input
           type="email"
           placeholder="邮箱"
+          value={email} // 👈 绑定状态
           onChange={(e) => setEmail(e.target.value)}
           required
         />
@@ -40,6 +41,7 @@ function Signup() {
         <input
           type="password"
           placeholder="密码"
+          value={password} // 👈 绑定真相来源
           onChange={(e) => setPassword(e.target.value)}
           required
         />

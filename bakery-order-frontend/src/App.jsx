@@ -11,6 +11,9 @@ function App() {
   const navigate = useNavigate(); // ✅ 现在这里生效了，因为父级 main.jsx 有 Router
   const [cartItems, setCartItems] = useState([]);
 
+  // 增加一个简单的触发器，用来手动通知 useEffect 刷新数据
+  const [tick, setTick] = useState(0);
+
   useEffect(() => {
     const fetchCart = async () => {
       console.log("正在尝试获取购物车数据...");
@@ -41,7 +44,7 @@ function App() {
       }
     };
     fetchCart();
-  }, [navigate]);
+  }, [navigate, tick]);
 
   const addToCart = async (product) => {
     const res = await fetch("http://localhost:3000/api/v1/cart_items", {
@@ -58,14 +61,22 @@ function App() {
     }
 
     if (res.ok) {
-      const newItem = await res.json();
-      setCartItems((prevItems) => [...prevItems, newItem]);
+      // ✅ 重点：这里不直接调函数，而是改变 tick 的值
+      // 这一变，上面的 useEffect 就会感知到，并自动运行内部的 fetchCart
+      setTick((prev) => prev + 1);
+      alert("添加成功！");
     }
   };
 
+  // 计算购物车中所有面包的总件数 (9个牛角包 + 1个吐司 = 10件)
+  const totalItemsCount = cartItems.reduce(
+    (total, item) => total + (item.quantity || 0),
+    0
+  );
+
   return (
     <>
-      <Navbar count={cartItems.length} />
+      <Navbar count={totalItemsCount} />
       <Routes>
         <Route path="/" element={<Home onAddToCart={addToCart} />} />
         <Route path="/cart" element={<Cart items={cartItems} />} />

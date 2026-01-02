@@ -4,7 +4,7 @@ class Api::V1::CartItemsController < ApplicationController
 
   def index
     # 临时展示数据库里所有的购物车项，不管是谁的
-    @cart_items = CartItem.all
+    @cart_items = current_user.cart_items.all
     render json: @cart_items.as_json(include: :bread)
   end
 

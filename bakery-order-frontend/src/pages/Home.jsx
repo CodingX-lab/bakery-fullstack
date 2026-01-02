@@ -13,16 +13,12 @@ function Home({ onAddToCart }) {
     console.log("组件挂载了，准备去拿数据...");
     document.title = "欢迎光临面包店";
 
-    setTimeout(() => {
-      fetch("http://localhost:3000/api/v1/breads") // 指向你的 Rails 地址
-        .then((res) => res.json())
-        .then((data) => {
-          setBreadList(data);
-          setIsLoading(false);
-        });
-
-      setIsLoading(false); // 关掉加载动画
-    }, 1000);
+    fetch("http://localhost:3000/api/v1/breads")
+      .then((res) => res.json())
+      .then((data) => {
+        setBreadList(data);
+        setIsLoading(false);
+      });
   }, []); // 👈 注意这个空数组 []，它表示“只在页面第一次加载时执行一次”
 
   return (
