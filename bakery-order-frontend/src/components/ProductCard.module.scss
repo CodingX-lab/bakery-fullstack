@@ -1,0 +1,76 @@
+/* ProductCard.module.scss */
+.card {
+  border: 1px solid #eee;
+  padding: 10px;
+  // background-color: lightblue;
+
+  .imageContainer {
+    position: relative; // 重要！这相当于插了一面旗子，告诉按钮：“以我为基准”
+    width: 100%;
+    overflow: hidden; // 保证图片圆角能切掉溢出的部分
+
+    .productImage {
+      width: 100%; /* 宽度撑满卡片容器 */
+      height: 160px;
+      object-fit: cover; /* 核心属性！这会让图片自动裁剪填充，不会被压扁或拉长 */
+      // object-position: center; /* 如果原图太小，有些浏览器可能会让它模糊，这一行可以确保它尽可能清晰地拉伸 */
+      border-radius: 8px; /* 给图片也加点圆角，更好看 */
+      display: block;
+    }
+
+    .likeBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      background-color: #fef2f2; // 极淡的红色背景
+      border: 1px solid #fee2e2; // 浅红边框
+      color: #ef4444; // 经典的红心色
+      padding: 6px 12px;
+      border-radius: 20px; // 胶囊形状，看起来更亲切
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 600;
+      transition: all 0.2s ease; // 让所有变化都带一点动画
+      display: flex;
+      align-items: center;
+      gap: 5px; // 图标和数字之间的间距
+
+      &:hover {
+        background-color: #fee2e2;
+        transform: scale(1.05); // 鼠标放上去稍微变大一点
+      }
+
+      &:active {
+        transform: scale(0.95); // 点下去那一瞬间稍微缩小，模仿物理按键感
+      }
+    }
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+
+    h3 {
+      color: #ff9d00; // 鼠标悬停时标题变色
+    }
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; // 默认所有东西靠左对齐
+    margin-top: 10px;
+
+    .price {
+      color: #e44d26;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .addBtn {
+      // 魔法时刻：
+      align-self: flex-end; // 专门让这一个元素针对父级右对齐
+      padding: 8px;
+    }
+  }
+}
