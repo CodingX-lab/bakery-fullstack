@@ -1,0 +1,11 @@
+AllCops:
+  NewCops: enable
+  Exclude:
+    - "db/**/*"
+    - "config/**/*"
+    - "bin/*"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+
+Style/Documentation:
+  Enabled: false # 顺便解决你之前那个顶级文档注释的报错
