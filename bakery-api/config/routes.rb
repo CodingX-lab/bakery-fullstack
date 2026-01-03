@@ -1,7 +1,11 @@
 # config/routes.rb
 
 Rails.application.routes.draw do
-  devise_for :users
+  # 1. 把它挪出来，别放在 api/v1 里面
+  devise_for :users, controllers: {
+    registrations: 'users/registrations'
+  }
+
   # 将路由包裹在 api/v1 命名空间下
   namespace :api do
     namespace :v1 do

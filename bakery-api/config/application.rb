@@ -29,8 +29,9 @@ module BakeryApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    # 1. 开启 Cookie 和 Session 中间件
+    # 1. 开启 Cookie，Session和 Flash 中间件
     config.middleware.use ActionDispatch::Cookies
     config.middleware.use ActionDispatch::Session::CookieStore, key: '_bakery_api_session'
+    config.middleware.use ActionDispatch::Flash
   end
 end
