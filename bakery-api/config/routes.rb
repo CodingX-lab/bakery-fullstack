@@ -1,13 +1,11 @@
 # config/routes.rb
-
 Rails.application.routes.draw do
-  # 1. 把它挪出来，别放在 api/v1 里面
-  devise_for :users, controllers: {
+  # 给 devise 增加默认 json 格式，这样它就不会总想着跳 HTML 页面了
+  devise_for :users, defaults: { format: :json }, controllers: {
     registrations: 'users/registrations'
   }
 
-  # 将路由包裹在 api/v1 命名空间下
-  namespace :api do
+  namespace :api, defaults: { format: :json } do # 同样给 API 增加默认格式
     namespace :v1 do
       resources :breads, only: %i[index]
       resources :cart_items, only: %i[index create]
