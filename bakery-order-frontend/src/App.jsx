@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 function App() {
   const navigate = useNavigate(); // ✅ 现在这里生效了，因为父级 main.jsx 有 Router
   const [cartItems, setCartItems] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // 用 useCallback 包裹 fetchCart
   const fetchCart = useCallback(async () => {
@@ -26,11 +27,28 @@ function App() {
     }
   }, []);
 
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/current_user_endpoint", {
+        // 你后端获取当前用户的接口
+        credentials: "include",
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setCurrentUser(result.data); // 设置全局用户
+      }
+    } catch (error) {
+      setCurrentUser(null);
+      console.error("获取失败", error);
+    }
+  };
+
   // 专门给“初始化”用的 Effect
   useEffect(() => {
     // 把 fetchCart 定义在里面，这样它就不再是外部依赖了
     const fetchInitialData = async () => {
-      await fetchCart();
+      fetchUser();
+      fetchCart();
     };
 
     fetchInitialData();
@@ -66,12 +84,21 @@ function App() {
 
   return (
     <>
-      <Navbar count={totalItemsCount} />
+      {/* 1. 把 user 传给 Navbar */}
+      <Navbar
+        count={totalItemsCount}
+        user={currentUser}
+        setUser={setCurrentUser}
+      />
       <Routes>
         <Route path="/" element={<Home onAddToCart={addToCart} />} />
         <Route path="/cart" element={<Cart items={cartItems} />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        {/* 2. 把 setUser 传给登录页面，登录成功后调用它 */}
+        <Route
+          path="/login"
+          element={<Login setUser={setCurrentUser} fetchCart={fetchCart} />}
+        />
+        <Route path="/signup" element={<Signup setUser={setCurrentUser} />} />
       </Routes>
     </>
   );

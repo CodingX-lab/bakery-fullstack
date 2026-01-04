@@ -1,44 +1,62 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Container,
+  Paper,
+} from "@mui/material";
 
-function Signup() {
-  // 1. 只需要 register 和 handleSubmit
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+function Signup({ setUser }) {
   const navigate = useNavigate();
 
-  // data 参数会自动包含 { email: "...", password: "..." }
+  // 1. 初始化 RHF
+  const {
+    control,
+    handleSubmit,
+    // formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: "", // 明天记得在后端也同步加上这个字段
+      email: "",
+      password: "",
+      password_confirmation: "",
+    },
+  });
+
+  // 2. 提交逻辑：data 会自动包含上面所有的字段
   const onSubmit = async (data) => {
     try {
       const response = await fetch("http://localhost:3000/users", {
-        // 假设这是 Rails Devise 的路径
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        // 注意：Rails 通常期望数据嵌套在 user 对象里
         body: JSON.stringify({
           user: {
-            email: data.email,
-            password: data.password,
-            password_confirmation: data.password_confirmation,
+            ...data,
+            password_confirmation: data.password_confirmation, // Devise 默认需要确认字段
           },
         }),
         credentials: "include",
       });
 
+      const result = await response.json();
+      console.log("注册返回的数据:", result);
+
       if (response.ok) {
-        alert("登录成功！");
+        // setUser(result.data); // ✅ 更新用户状态
+        setUser(result); // ✅ 更新用户状态
+        alert("注册成功！");
         navigate("/");
-        window.location.reload();
       } else {
-        alert("登录失败，请检查邮箱或密码");
+        // 如果后端报错，result.errors 会包含类似 { email: ["has already been taken"] }
+        console.error("注册失败:", result.errors);
+        alert("注册失败: " + JSON.stringify(result.errors));
       }
     } catch (error) {
       console.error("网络错误:", error);
@@ -46,58 +64,109 @@ function Signup() {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
-      <Typography variant="h5">注册</Typography>
+    <Container maxWidth="xs">
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant="h5" gutterBottom align="center">
+          注册新账号
+        </Typography>
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
-        {/* 2. 关键点：直接使用 inputProps 注入 register */}
-        <TextField
-          label="邮箱"
-          fullWidth
-          margin="normal"
-          // 1. 注册校验规则
-          {...register("email", {
-            required: "必须填写邮箱",
-            pattern: {
-              value: /^\S+@\S+$/i,
-              message: "格式不太对哦",
-            },
-          })}
-          // 2. 联动显示：如果 errors 里面有 email 的错误，就把框框变红
-          error={!!errors.email}
-          // 3. 联动提示：把保险箱里的错误话术显示在输入框下面
-          helperText={errors.email?.message}
-        />
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          sx={{ mt: 1 }}
+        >
+          {/* Username 字段 */}
+          <Controller
+            name="username"
+            control={control}
+            rules={{ required: "请输入用户名" }}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                label="用户名"
+                fullWidth
+                margin="normal"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
+          />
 
-        <TextField
-          label="密码"
-          type="password"
-          fullWidth
-          margin="normal"
-          {...register("password", {
-            minLength: { value: 6, message: "最少6位" },
-          })}
-          error={!!errors.password}
-          helperText={errors.password?.message}
-        />
+          {/* Email 字段 */}
+          <Controller
+            name="email"
+            control={control}
+            rules={{
+              required: "请输入邮箱",
+              pattern: { value: /^\S+@\S+$/i, message: "邮箱格式不正确" },
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                label="邮箱"
+                fullWidth
+                margin="normal"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
+          />
 
-        <TextField
-          label="确认密码"
-          type="password"
-          fullWidth
-          {...register("password_confirmation", {
-            required: "请再次输入密码",
-            validate: (value, formValues) =>
-              value === formValues.password || "两次密码不一致哦", // 👈 核心逻辑
-          })}
-          error={!!errors.password_confirmation}
-          helperText={errors.password_confirmation?.message}
-        />
+          {/* Password 字段 */}
+          <Controller
+            name="password"
+            control={control}
+            rules={{
+              required: "请输入密码",
+              minLength: { value: 6, message: "最少6位" },
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                label="密码"
+                type="password"
+                fullWidth
+                margin="normal"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
+          />
 
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
-          立即提交
-        </Button>
-      </Box>
+          {/* password_confirmation 字段 */}
+          <Controller
+            name="password_confirmation"
+            control={control}
+            rules={{
+              required: "请再次输入密码",
+              minLength: { value: 6, message: "最少6位" },
+              validate: (value, formValues) =>
+                value === formValues.password || "两次密码不一致哦",
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                label="密码"
+                type="password"
+                fullWidth
+                margin="normal"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2, py: 1.5 }}
+          >
+            立即注册
+          </Button>
+        </Box>
+      </Paper>
     </Container>
   );
 }
