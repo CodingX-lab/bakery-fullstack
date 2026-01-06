@@ -1,5 +1,7 @@
 // src/pages/Cart.jsx
-function Cart({ items }) {
+import CartItem from "../components/CartItem";
+
+function Cart({ items, onAddToCart, onUpdateQuantity, onDeleteCartItem }) {
   return (
     <div>
       <h2>你的购物车</h2>
@@ -8,9 +10,13 @@ function Cart({ items }) {
       ) : (
         <ul>
           {items.map((item, index) => (
-            <li key={index}>
-              {item.bread.name} - {item.bread.price}元
-            </li>
+            <CartItem
+              key={index}
+              cartItem={item}
+              onAdd={onAddToCart}
+              onUpdate={onUpdateQuantity}
+              onDelete={onDeleteCartItem}
+            />
           ))}
         </ul>
       )}

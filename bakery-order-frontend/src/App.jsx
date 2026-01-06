@@ -76,6 +76,32 @@ function App() {
     }
   };
 
+  // 通用更新 (加减数量、改备注等)
+  const updateQuantity = async (cartItemId, newQuantity) => {
+    const res = await fetch(
+      `http://localhost:3000/api/v1/cart_items/${cartItemId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: newQuantity }), // 注意嵌套格式
+        credentials: "include",
+      }
+    );
+    if (res.ok) await fetchCart();
+  };
+
+  // 删除商品
+  const deleteCartItem = async (cartItemId) => {
+    const res = await fetch(
+      `http://localhost:3000/api/v1/cart_items/${cartItemId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    if (res.ok) await fetchCart();
+  };
+
   // 计算购物车中所有面包的总件数 (9个牛角包 + 1个吐司 = 10件)
   const totalItemsCount = cartItems.reduce(
     (total, item) => total + (item.quantity || 0),
@@ -92,7 +118,17 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<Home onAddToCart={addToCart} />} />
-        <Route path="/cart" element={<Cart items={cartItems} />} />
+        <Route
+          path="/cart"
+          element={
+            <Cart
+              items={cartItems}
+              onAddToCart={addToCart}
+              onUpdateQuantity={updateQuantity}
+              onDeleteCartItem={deleteCartItem}
+            />
+          }
+        />
         {/* 2. 把 setUser 传给登录页面，登录成功后调用它 */}
         <Route
           path="/login"

@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do # 同样给 API 增加默认格式
     namespace :v1 do
       resources :breads, only: %i[index]
-      resources :cart_items, only: %i[index create]
+      resources :cart_items, only: %i[index create update destroy]
     end
   end
 end
