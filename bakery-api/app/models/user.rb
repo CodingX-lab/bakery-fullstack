@@ -6,4 +6,9 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :cart_items
+
+  # 快捷判断：可以用 if current_user.admin? 代替 if current_user.role == "admin"
+  def admin?
+    role == 'admin'
+  end
 end
